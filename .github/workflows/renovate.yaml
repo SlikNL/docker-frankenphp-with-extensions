@@ -1,0 +1,36 @@
+name: ⬆️ Renovate
+on:
+  schedule:
+    # Daily (4 times), after the upstream FrankenPHP images rebuild at 04:00 UTC
+    - cron: '0 5,6,7,8 * * *'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  renovate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Get token
+        id: get_token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Renovate
+        uses: renovatebot/github-action@266fef21329c44765ad42f9dea1f01f5d2d91084 # v46.3.13
+        with:
+          configurationFile: .github/renovate-action-config.json
+          token: '${{ steps.get_token.outputs.token }}'

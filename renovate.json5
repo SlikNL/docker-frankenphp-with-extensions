@@ -1,0 +1,47 @@
+{
+	$schema: 'https://docs.renovatebot.com/renovate-schema.json',
+	extends: ['config:best-practices'],
+	rangeStrategy: 'pin',
+	prHourlyLimit: 0,
+	automergeType: 'branch',
+	platformAutomerge: false,
+	packageRules: [
+		{
+			// GitHub Actions only move when a Dependabot alert exists for the pinned version.
+			// The alert rule below forces enabled: true for the affected action.
+			matchManagers: ['github-actions'],
+			enabled: false,
+		},
+		{
+			// Automerge non-major updates
+			matchUpdateTypes: ['minor', 'patch', 'digest', 'pin', 'pinDigest'],
+			automerge: true,
+			ignoreTests: true,
+		},
+		{
+			// FrankenPHP tags look like 1.13.5-php8.5.12-trixie. The PHP patch version counts as a
+			// fourth version part, so a new PHP patch release is picked up as a patch update.
+			// The PHP minor version and the OS are the compatibility part: Renovate never changes them.
+			// This rule covers both the ARG default in the Dockerfile and the entries in versions.json.
+			matchDatasources: ['docker'],
+			matchDepNames: ['dunglas/frankenphp'],
+			versioning: 'regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-php(?<compatibility>\\d+\\.\\d+)\\.(?<build>\\d+)-trixie$',
+		},
+	],
+	vulnerabilityAlerts: {
+		enabled: true,
+		automerge: true,
+	},
+	customManagers: [
+		{
+			// Each entry in frankenphp/versions.json is a dunglas/frankenphp tag with a pinned digest.
+			customType: 'regex',
+			managerFilePatterns: ['/^frankenphp/versions\\.json$/'],
+			matchStrings: [
+				'"(?<currentValue>[^"@]+)@(?<currentDigest>[^"]+)"',
+			],
+			depNameTemplate: 'dunglas/frankenphp',
+			datasourceTemplate: 'docker',
+		},
+	],
+}
