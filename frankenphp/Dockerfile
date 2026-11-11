@@ -47,3 +47,14 @@ RUN install-php-extensions \
     yaml \
     zip \
     zstd
+
+# Run as www-data. The binary loses the capability to bind ports below 1024,
+# so the server listens on 8080 by default. Set SERVER_NAME to change the address.
+# /var/www is the home of www-data and does not exist in the base image.
+RUN setcap -r /usr/local/bin/frankenphp \
+    && mkdir -p /var/www \
+    && chown -R www-data:www-data /app /config /data /var/www
+
+ENV SERVER_NAME=:8080
+EXPOSE 8080
+USER www-data

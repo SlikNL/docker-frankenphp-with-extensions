@@ -3,16 +3,21 @@
 [FrankenPHP](https://frankenphp.dev) Docker image with a broad set of PHP extensions preinstalled. Tags for every supported PHP version, for `linux/amd64` and `linux/arm64`.
 
 ```sh
-docker pull ghcr.io/sliknl/frankenphp:php8.4
+docker run -p 8080:8080 ghcr.io/sliknl/frankenphp:php8.4
 ```
 
 ```dockerfile
 FROM ghcr.io/sliknl/frankenphp:php8.4
 
-COPY . /app/public
+COPY --chown=www-data . /app/public
 ```
 
-The image is the official `dunglas/frankenphp` Debian image plus the extensions below. Everything else, such as the Caddyfile, ports, and worker mode, works as described in the [FrankenPHP Docker documentation](https://frankenphp.dev/docs/docker/).
+The image is the official `dunglas/frankenphp` Debian image plus the extensions below, with two changes:
+
+- It runs as the non-root user `www-data`, which owns `/app`, `/config`, and `/data`.
+- It listens on port 8080 (`SERVER_NAME=:8080`) because a non-root process cannot bind ports below 1024. Set `SERVER_NAME` to another port or hostname when needed.
+
+Everything else, such as the Caddyfile, worker mode, and environment variables, works as described in the [FrankenPHP Docker documentation](https://frankenphp.dev/docs/docker/).
 
 ## Tags
 
@@ -33,10 +38,12 @@ These extensions are added on top of what `dunglas/frankenphp` already ships:
 
 `amqp` `apcu` `ast` `bcmath` `brotli` `bz2` `calendar` `dba` `exif` `ftp` `gd` `gettext` `gmp` `igbinary` `imagick` `intl` `ldap` `lz4` `memcached` `mysqli` `parallel` `pcntl` `pdo_mysql` `pdo_pgsql` `pgsql` `protobuf` `redis` `shmop` `soap` `sockets` `ssh2` `sysvmsg` `sysvsem` `sysvshm` `tidy` `xlswriter` `xsl` `yaml` `zip` `zstd`
 
-This is the default extension set of the FrankenPHP static build. To add more, use `install-php-extensions` in your own Dockerfile:
+This is the default extension set of the FrankenPHP static build. To add more, use `install-php-extensions` in your own Dockerfile. It needs root:
 
 ```dockerfile
 FROM ghcr.io/sliknl/frankenphp:php8.4
 
+USER root
 RUN install-php-extensions xdebug
+USER www-data
 ```
