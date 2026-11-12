@@ -1,6 +1,6 @@
 # The CI builds one image per entry in versions.json and passes the entry as BASE_TAG.
 # The default below only serves local builds without --build-arg.
-ARG BASE_TAG=1.13.5-php8.5.12-trixie@sha256:7e73a27eb7712a5b4073b92f8f0dec91e9400138604b76cc791589faaa6a639c
+ARG BASE_TAG=1.13.5-php8.5.12-trixie@sha256:667c5fffd348d9c3c260803d75956f1d9aace7e4b7331d8893de6f101d7e0e57
 
 FROM dunglas/frankenphp:${BASE_TAG}
 
